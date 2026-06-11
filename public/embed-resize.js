@@ -64,6 +64,21 @@
 	function start() {
 		post = document.body.getAttribute('data-ad-embed-post') || '';
 
+		// Redirect every link click to a new tab. Without this, clicking a
+		// link navigates the iframe itself, not the partner page — the reader
+		// ends up with our site inside a frame within the partner's layout,
+		// which is confusing and usually broken. Capture phase ensures we run
+		// before any in-page JS that might call preventDefault.
+		document.addEventListener('click', function (e) {
+			var a = e.target;
+			while (a && a.nodeName !== 'A') { a = a.parentNode; }
+			if (!a || !a.href) { return; }
+			a.target = '_blank';
+			// noopener: prevents the new tab from accessing window.opener
+			// (a security best practice whenever target="_blank" is set).
+			a.rel = a.rel ? a.rel + ' noopener' : 'noopener';
+		}, true);
+
 		// First report immediately — this is what replaces the loader's
 		// 300px bootstrap min-height with the real article height.
 		send();
