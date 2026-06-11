@@ -178,9 +178,12 @@ class AD_Embed_Domains {
 	 *
 	 *     'example.com'    → https://example.com https://www.example.com
 	 *     '*.example.com'  → https://example.com https://*.example.com
+	 *     'localhost'      → http://localhost https://localhost
+	 *                        (both schemes: local dev servers run on HTTP)
 	 *
-	 * HTTPS-only by design: partner sites embedding our journalism should
-	 * be on HTTPS. For local development exceptions, use the filter below.
+	 * Real partner sites must be HTTPS. localhost is the sole exception:
+	 * local dev servers run on HTTP, so both schemes are emitted for it,
+	 * covering any port (e.g. :3000, :3456, :8080).
 	 *
 	 * @return string[] CSP source expressions (never includes 'self' —
 	 *                  the caller adds that).
@@ -192,8 +195,13 @@ class AD_Embed_Domains {
 		foreach ( $entries as $entry ) {
 			if ( 0 === strpos( $entry, '*.' ) ) {
 				$base      = substr( $entry, 2 );
-				$sources[] = 'https://' . $base;        // CSP "*." does not cover the bare domain,
-				$sources[] = 'https://*.' . $base;       // so we emit both explicitly.
+				$sources[] = 'https://' . $base;         // CSP "*." does not cover the bare domain,
+				$sources[] = 'https://*.' . $base;        // so we emit both explicitly.
+			} elseif ( 'localhost' === $entry ) {
+				// Local dev servers are HTTP; emit both schemes so any
+				// port on localhost is covered by the CSP header.
+				$sources[] = 'http://localhost';
+				$sources[] = 'https://localhost';
 			} else {
 				$sources[] = 'https://' . $entry;
 				if ( 0 !== strpos( $entry, 'www.' ) ) {

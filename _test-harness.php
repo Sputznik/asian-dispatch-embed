@@ -106,6 +106,14 @@ $csp = AD_Embed_Domains::csp_header_value();
 echo "\nCSP: $csp\n\n";
 check( 'csp has self', strpos( $csp, "frame-ancestors 'self'" ) === 0 );
 check( 'csp has bare + www for plain entry', strpos( $csp, 'https://example.com' ) !== false && strpos( $csp, 'https://www.example.com' ) !== false );
+
+// localhost CSP check
+$GLOBALS['__options']['ad_embed_allowlist'] = array( 'localhost' );
+$csp_local = AD_Embed_Domains::csp_header_value();
+check( 'localhost => http scheme included in CSP', strpos( $csp_local, 'http://localhost' ) !== false );
+check( 'localhost => https scheme included in CSP', strpos( $csp_local, 'https://localhost' ) !== false );
+check( 'localhost => no www.localhost variant', strpos( $csp_local, 'www.localhost' ) === false );
+$GLOBALS['__options']['ad_embed_allowlist'] = array( 'example.com', 'news.partner.org', '*.network.net' );
 check( 'csp has wildcard pair', strpos( $csp, 'https://network.net' ) !== false && strpos( $csp, 'https://*.network.net' ) !== false );
 
 $GLOBALS['__options']['ad_embed_allowlist'] = array();
