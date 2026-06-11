@@ -3,17 +3,21 @@
  * The "Embed this post" copy button shown to contributors on the frontend.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * HOW THE THEME USES THIS
+ * PLACEMENT STRATEGY — no theme edits needed
  * ─────────────────────────────────────────────────────────────────────────
- * The plugin never guesses where the button belongs — the theme decides by
- * placing two action calls in each single-post template variant:
+ * Buttons are injected via the_content filter:
+ *   - Header button: prepended before the post body text.
+ *   - Footer button: appended after the post body text.
  *
- *     <?php do_action( 'ad_embed_button', 'header' ); ?>   // post header area
- *     <?php do_action( 'ad_embed_button', 'footer' ); ?>   // after .post-footnote
+ * Note: the footer button appears after the post body but BEFORE any
+ * theme-rendered elements that live outside the_content() call (such as
+ * .post-footnote). Without theme access this is the closest placement
+ * available. If theme access is later restored, the original do_action
+ * approach can be reinstated by swapping the hook in __construct().
  *
- * The action is ALWAYS safe to call: render() checks every condition and
- * simply outputs nothing for logged-out visitors, users below Contributor,
- * non-post content, password-protected posts, or inside embed views.
+ * The filter is guarded by is_main_query() + in_the_loop() to avoid
+ * injecting into widget areas, shortcodes, or REST/feed calls that also
+ * invoke the_content() behind the scenes.
  *
  * WHY CONTRIBUTORS DON'T NEED wp-admin
  * Everything happens on the frontend: the capability check runs against
@@ -28,12 +32,48 @@ defined( 'ABSPATH' ) || exit;
 class AD_Embed_Button {
 
 	public function __construct() {
-		// The theme-facing render hook (see file header).
-		add_action( 'ad_embed_button', array( $this, 'render' ) );
+		// Inject buttons directly into post content — no theme hooks needed.
+		add_filter( 'the_content', array( $this, 'inject_buttons' ) );
 
 		// Assets are registered through the normal enqueue pipeline so
 		// they get version query-strings and can be dequeued if needed.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue' ) );
+	}
+
+	/**
+	 * Prepend the header button and append the footer button to the post
+	 * content. Fires on every the_content() call, but the guards below
+	 * limit actual injection to one main-query singular-post view per page.
+	 *
+	 * @param string $content The post content HTML.
+	 * @return string Content with buttons wrapped around it, or unchanged.
+	 */
+	public function inject_buttons( $content ) {
+		// is_main_query(): skip widget areas, shortcodes, and REST/feed
+		// calls — those also run the_content() but we only want the
+		// primary post body in the single-post template.
+		// in_the_loop(): skip any the_content() call outside a WP loop
+		// (some page builders do this).
+		if ( ! is_main_query() || ! in_the_loop() ) {
+			return $content;
+		}
+
+		// Capture the header button (render() outputs nothing if
+		// should_show() returns false, so ob_get_clean() is safe).
+		ob_start();
+		$this->render( 'header' );
+		$header_btn = ob_get_clean();
+
+		ob_start();
+		$this->render( 'footer' );
+		$footer_btn = ob_get_clean();
+
+		// Nothing to add (e.g. logged-out visitor) — return untouched.
+		if ( '' === $header_btn && '' === $footer_btn ) {
+			return $content;
+		}
+
+		return $header_btn . $content . $footer_btn;
 	}
 
 	/**
@@ -45,9 +85,9 @@ class AD_Embed_Button {
 	 */
 	private function should_show() {
 		// Never show the button INSIDE an embed view: the embed contains
-		// <main>, and the theme's do_action calls live inside <main>, so
-		// without this check a logged-in contributor previewing an embed
-		// would see a button within the iframe.
+		// <main>, and the_content() is called inside <main>, so without
+		// this check a logged-in contributor previewing an embed would
+		// see a button inside the iframe.
 		if ( AD_Embed_Endpoint::is_embed_request() ) {
 			return false;
 		}
@@ -116,7 +156,11 @@ class AD_Embed_Button {
 	/**
 	 * Output the button + hidden copy popover.
 	 *
-	 * Runs whenever the theme fires do_action( 'ad_embed_button', … ).
+	 * Called by inject_buttons() via output buffering. Can also be called
+	 * directly from a theme template via:
+	 *   <?php do_action( 'ad_embed_button', 'header' ); ?>
+	 * if theme access is later restored — this method is the single
+	 * implementation regardless of how it is invoked.
 	 *
 	 * @param string $location 'header' or 'footer'. Only used as a CSS
 	 *                         modifier class — e.g. the footer popover

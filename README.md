@@ -31,24 +31,6 @@ Embedding only works on domains an administrator has allowlisted under **Setting
 
 ---
 
-## Theme Integration
-
-The theme controls where the button appears. In each single-post template variant, add:
-
-**In the post header area:**
-```php
-<?php do_action( 'ad_embed_button', 'header' ); ?>
-```
-
-**After the footnote area (`.post-footnote`):**
-```php
-<?php do_action( 'ad_embed_button', 'footer' ); ?>
-```
-
-The action renders nothing for logged-out visitors, users below Contributor, non-post content, or inside embed views — it is always safe to call.
-
----
-
 ## Settings
 
 **Settings → AD Embed** (administrators only). One domain per line:
