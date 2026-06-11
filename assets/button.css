@@ -1,0 +1,132 @@
+/**
+ * Asian Dispatch Embed — copy-button UI styles.
+ *
+ * Loaded only for logged-in users who can see the button (conditionally
+ * enqueued by AD_Embed_Button::enqueue()), so these bytes never reach
+ * normal readers.
+ *
+ * Everything is scoped under .ad-embed-copy to avoid collisions with
+ * theme styles. Class map (BEM-ish):
+ *   .ad-embed-copy            wrapper; also the position:relative anchor
+ *                             that the absolutely-positioned popover
+ *                             hangs off
+ *   .ad-embed-copy--header /  placement modifiers printed by the theme's
+ *   .ad-embed-copy--footer    do_action('ad_embed_button', <location>);
+ *                             they only differ in popover direction
+ *   .ad-embed-copy__toggle    the pill-shaped "Embed this post" button
+ *   .ad-embed-copy__popover   the panel (display toggled via [hidden])
+ *   .ad-embed-copy__hint      short usage explanation
+ *   .ad-embed-copy__code      readonly textarea with the snippet
+ *   .ad-embed-copy__btn       the Copy action
+ */
+
+.ad-embed-copy {
+	position: relative; /* anchor for the absolute popover */
+	display: inline-block;
+	font-family: "Open Sans", sans-serif; /* matches the theme's UI font */
+	line-height: 1.4;
+}
+
+/* ── The toggle pill ─────────────────────────────────────────────────── */
+/* Uses currentColor so it inherits the surrounding text color and works
+   on both light post headers and darker footer areas without variants. */
+.ad-embed-copy__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 0.35em 0.9em;
+	border: 1px solid currentColor;
+	border-radius: 2em;
+	background: transparent;
+	color: inherit;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+/* Decorative "</>" glyph before the label, built from escaped < / >
+   characters so no icon font or SVG asset is needed. */
+.ad-embed-copy__toggle::before {
+	content: "\003C\002F\003E"; /* </> */
+	font-size: 0.75em;
+	font-weight: 700;
+	letter-spacing: -0.05em;
+}
+
+.ad-embed-copy__toggle:hover,
+.ad-embed-copy.is-open .ad-embed-copy__toggle {
+	background: #111;
+	border-color: #111;
+	color: #fff;
+}
+
+/* ── The popover panel ───────────────────────────────────────────────── */
+.ad-embed-copy__popover {
+	position: absolute;
+	left: 0;
+	z-index: 9999; /* above theme content; below typical modal overlays */
+	width: min(360px, 90vw); /* never wider than the phone viewport */
+	padding: 14px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	background: #fff;
+	color: #333;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	text-align: left;
+}
+
+/* Header placement: popover drops DOWN below the button. */
+.ad-embed-copy--header .ad-embed-copy__popover {
+	top: calc(100% + 8px);
+}
+
+/* Footer placement: popover opens UP so it can't be clipped by the
+   bottom of the page (the button sits after the footnotes, near the
+   end of <main>). */
+.ad-embed-copy--footer .ad-embed-copy__popover {
+	bottom: calc(100% + 8px);
+}
+
+.ad-embed-copy__hint {
+	margin: 0 0 10px;
+	font-size: 0.8125rem;
+	color: #555;
+}
+
+/* The snippet box: monospace, quietly grey, resizable only vertically
+   (horizontal resize would break the popover layout). */
+.ad-embed-copy__code {
+	display: block;
+	width: 100%;
+	margin: 0 0 10px;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #f7f7f7;
+	color: #222;
+	font-family: Consolas, Menlo, monospace;
+	font-size: 0.75rem;
+	resize: vertical;
+	box-sizing: border-box;
+}
+
+.ad-embed-copy__btn {
+	padding: 0.4em 1.2em;
+	border: 0;
+	border-radius: 4px;
+	background: #111;
+	color: #fff;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.ad-embed-copy__btn:hover {
+	background: #333;
+}
+
+/* Green confirmation state while "Copied ✓" is shown (button.js swaps
+   the label and adds this class for 2 seconds). */
+.ad-embed-copy__btn.is-copied {
+	background: #1a7f37;
+}
