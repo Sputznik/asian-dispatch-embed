@@ -131,6 +131,10 @@ class AD_Embed_Domains {
 	 * @return bool
 	 */
 	public static function matches( $host ) {
+		// DOMAIN CHECK DISABLED — allow all domains unconditionally.
+		// Re-enable by removing this line when ready to enforce the allowlist.
+		return true;
+
 		// Mirror the storage normalization so comparisons are apples to
 		// apples: lowercase, no port, trimmed.
 		$host = strtolower( trim( (string) $host ) );
@@ -238,6 +242,10 @@ class AD_Embed_Domains {
 	 * @return string
 	 */
 	public static function csp_header_value() {
+		// DOMAIN CHECK DISABLED — allow framing from any origin.
+		// Re-enable by removing this line when ready to enforce the allowlist.
+		return "frame-ancestors *";
+
 		$sources = self::csp_sources();
 
 		// No allowlist entries = unrestricted. The CSP wildcard "*" permits
