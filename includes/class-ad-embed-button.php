@@ -191,7 +191,7 @@ class AD_Embed_Button {
 			</button>
 			<div class="ad-embed-copy__popover" hidden>
 				<p class="ad-embed-copy__hint">
-					<?php esc_html_e( 'Paste this code into your website where the article should appear. It only works on domains allowlisted by Asian Dispatch.', 'asian-dispatch-embed' ); ?>
+					<?php esc_html_e( 'Paste this code into your website where the article should appear.', 'asian-dispatch-embed' ); ?>
 				</p>
 				<textarea class="ad-embed-copy__code" readonly rows="4" spellcheck="false"><?php echo esc_textarea( $snippet ); ?></textarea>
 				<button type="button" class="ad-embed-copy__btn">
