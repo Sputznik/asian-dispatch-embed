@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shimmer loader — visual test</title>
+  <style>
+    body { font-family: sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
+    h2 { font-size: 1rem; color: #555; margin: 0 0 8px; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 24px; }
+    label { font-size: .8rem; color: #888; display: block; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+<h2>Shimmer states</h2>
+
+<!-- State 1: shimmer only (loading) -->
+<label>Loading state — shimmer visible</label>
+<div class="card">
+  <div id="loading-state" style="position:relative;min-height:300px;"></div>
+</div>
+
+<!-- State 2: revealed (shimmer gone, content visible) -->
+<label>Revealed state — shimmer faded out</label>
+<div class="card">
+  <div id="revealed-state" style="position:relative;min-height:300px;"></div>
+</div>
+
+<script>
+// Mirror the exact logic from embed.js so this test is faithful.
+
+// 1. Inject shimmer styles
+var style = document.createElement('style');
+style.id = 'ad-embed-styles';
+style.textContent =
+  '@keyframes adEmbedShimmer{' +
+    '0%{background-position:200% 0}' +
+    '100%{background-position:-200% 0}' +
+  '}' +
+  '.ad-embed-skeleton{' +
+    'position:absolute;top:0;left:0;right:0;bottom:0;' +
+    'background:linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%);' +
+    'background-size:400% 100%;' +
+    'animation:adEmbedShimmer 1.6s ease-in-out infinite;' +
+    'border-radius:2px;' +
+    'pointer-events:none;' +
+  '}';
+document.head.appendChild(style);
+
+function makeSkeleton(container) {
+  var skeleton = document.createElement('div');
+  skeleton.className = 'ad-embed-skeleton';
+  container.appendChild(skeleton);
+  return skeleton;
+}
+
+function makeFakeContent(container) {
+  container.innerHTML =
+    '<div style="padding:20px;background:#fff;">' +
+    '<p style="font:bold 1.2rem serif;margin:0 0 8px">Behind Vijay\'s Political Rise in Tamil Nadu</p>' +
+    '<p style="font:.9rem sans-serif;color:#555;line-height:1.6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>' +
+    '</div>';
+}
+
+// ── State 1: just shimmer ──────────────────────────────────────────────
+var loadingEl = document.getElementById('loading-state');
+makeSkeleton(loadingEl);
+
+// ── State 2: revealed (simulate first height message arriving) ─────────
+var revealedEl = document.getElementById('revealed-state');
+
+// fake iframe placeholder (invisible div acting as iframe)
+var fakeIframe = document.createElement('div');
+fakeIframe.style.cssText = 'width:100%;display:block;opacity:0;transition:opacity 0.4s ease;';
+makeFakeContent(fakeIframe);
+
+var revealedSkeleton = makeSkeleton(revealedEl);
+revealedEl.insertBefore(fakeIframe, revealedSkeleton);
+
+// Simulate first height message arriving after 800ms
+setTimeout(function () {
+  fakeIframe.style.opacity = '1';
+  setTimeout(function () {
+    if (revealedSkeleton.parentNode) {
+      revealedSkeleton.parentNode.removeChild(revealedSkeleton);
+    }
+  }, 420);
+}, 800);
+</script>
+
+</body>
+</html>
