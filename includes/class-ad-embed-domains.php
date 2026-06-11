@@ -139,7 +139,16 @@ class AD_Embed_Domains {
 			return false;
 		}
 
-		foreach ( self::get_allowlist() as $entry ) {
+		$allowlist = self::get_allowlist();
+
+		// Empty allowlist = no restrictions; every domain is permitted.
+		// This lets the plugin work out of the box before an admin has
+		// configured anything. Add domains to restrict embedding.
+		if ( empty( $allowlist ) ) {
+			return true;
+		}
+
+		foreach ( $allowlist as $entry ) {
 			if ( 0 === strpos( $entry, '*.' ) ) {
 				// Wildcard entry: "*.network.net" matches the bare domain
 				// ("network.net") or anything ENDING IN ".network.net".
@@ -215,12 +224,20 @@ class AD_Embed_Domains {
 	 *     frame-ancestors 'self' https://partner.com https://www.partner.com
 	 *
 	 * 'self' is always included so our own site can preview embeds.
-	 * With an EMPTY allowlist this becomes "frame-ancestors 'self'" —
-	 * i.e. external embedding is disabled by default, not open to all.
+	 * With an EMPTY allowlist this becomes "frame-ancestors *" —
+	 * i.e. any domain may embed. Add domains to the list to restrict.
 	 *
 	 * @return string
 	 */
 	public static function csp_header_value() {
-		return 'frame-ancestors ' . implode( ' ', array_merge( array( "'self'" ), self::csp_sources() ) );
+		$sources = self::csp_sources();
+
+		// No allowlist entries = unrestricted. The CSP wildcard "*" permits
+		// framing from any origin, matching the matches() open-by-default rule.
+		if ( empty( $sources ) ) {
+			return "frame-ancestors *";
+		}
+
+		return 'frame-ancestors ' . implode( ' ', array_merge( array( "'self'" ), $sources ) );
 	}
 }

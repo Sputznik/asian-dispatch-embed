@@ -94,7 +94,7 @@ class AD_Embed_Settings {
 	 * Keep this in sync with AD_Embed_Domains::matches().
 	 */
 	public function render_section_intro() {
-		echo '<p>' . esc_html__( 'Embedded posts will only render on the domains listed below (enforced in the browser via a Content-Security-Policy frame-ancestors header). One entry per line.', 'asian-dispatch-embed' ) . '</p>';
+		echo '<p>' . esc_html__( 'Embedded posts will only render on the domains listed below (enforced in the browser via a Content-Security-Policy frame-ancestors header). One entry per line. Leave empty to allow embedding on any domain.', 'asian-dispatch-embed' ) . '</p>';
 		echo '<ul style="list-style:disc;margin-left:1.5em">';
 		echo '<li><code>example.com</code> — ' . esc_html__( 'matches example.com and www.example.com', 'asian-dispatch-embed' ) . '</li>';
 		echo '<li><code>news.example.com</code> — ' . esc_html__( 'matches that exact subdomain only', 'asian-dispatch-embed' ) . '</li>';
@@ -113,7 +113,7 @@ class AD_Embed_Settings {
 			esc_attr( AD_Embed_Domains::OPTION ),
 			esc_textarea( implode( "\n", $entries ) )
 		);
-		echo '<p class="description">' . esc_html__( 'Leave empty to disable embedding on all external sites.', 'asian-dispatch-embed' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Leave empty to allow embedding on any domain. Add domains here to restrict embedding to those sites only.', 'asian-dispatch-embed' ) . '</p>';
 	}
 
 	/**

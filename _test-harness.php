@@ -109,7 +109,8 @@ check( 'csp has bare + www for plain entry', strpos( $csp, 'https://example.com'
 check( 'csp has wildcard pair', strpos( $csp, 'https://network.net' ) !== false && strpos( $csp, 'https://*.network.net' ) !== false );
 
 $GLOBALS['__options']['ad_embed_allowlist'] = array();
-check( 'empty allowlist => self only', AD_Embed_Domains::csp_header_value() === "frame-ancestors 'self'" );
+check( 'empty allowlist => allow all (frame-ancestors *)', AD_Embed_Domains::csp_header_value() === "frame-ancestors *" );
+check( 'empty allowlist => matches() returns true for any host', AD_Embed_Domains::matches( 'any-random-domain.com' ) === true );
 
 echo "\n" . ( $failures ? "$failures FAILURE(S)" : 'ALL CHECKS PASSED' ) . "\n";
 exit( $failures ? 1 : 0 );

@@ -41,7 +41,7 @@ Embedding only works on domains an administrator has allowlisted under **Setting
 | `news.example.com` | that exact subdomain only |
 | `*.example.com` | `example.com` and every subdomain |
 
-An empty list disables embedding on all external sites. Saving the list automatically purges WP Rocket / W3 Total Cache / WP Super Cache / LiteSpeed Cache when present, so the security header updates immediately.
+An empty list allows embedding on **any** domain. Add domains here to restrict embedding to those sites only. Saving the list automatically purges WP Rocket / W3 Total Cache / WP Super Cache / LiteSpeed Cache when present, so the security header updates immediately.
 
 ---
 
