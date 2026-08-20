@@ -224,11 +224,12 @@ class AD_Embed_Button {
 		$wrapper_class = implode(
 			' ',
 			array(
-				'ad-embed-wrapper',
 				'ad-embed-copy',
 				'ad-embed-copy--' . $location,
+				$icon ? 'ad-embed-wrapper--btn-icon' : 'ad-embed-wrapper--btn'
 			)
 		);
+
 		$toggle_class  = implode(
 			' ',
 			array_filter(
