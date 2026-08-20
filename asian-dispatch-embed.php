@@ -15,8 +15,9 @@
  * ─────────────────────────────────────────────────────────────────────────
  *
  * 1. THE BUTTON (class-ad-embed-button.php)
- *    Logged-in users with the Contributor role (or higher) see an
- *    "Embed this post" button on every published post. Clicking it shows
+ *    Placed via the [ad_embed_button] shortcode — the developer decides
+ *    where it appears. Logged-in users with the Contributor role (or
+ *    higher) see an "Embed this post" button there. Clicking it shows
  *    a small popover with a copy-to-clipboard snippet:
  *
  *        <div class="ad-embed" data-post="123" data-title="..."></div>

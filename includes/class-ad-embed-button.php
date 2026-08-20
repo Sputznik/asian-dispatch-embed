@@ -3,21 +3,24 @@
  * The "Embed this post" copy button shown to contributors on the frontend.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * PLACEMENT STRATEGY — no theme edits needed
+ * PLACEMENT STRATEGY — developer-controlled via shortcode
  * ─────────────────────────────────────────────────────────────────────────
- * Buttons are injected via the_content filter:
- *   - Header button: prepended before the post body text.
- *   - Footer button: appended after the post body text.
+ * No automatic injection into post content. The developer places the
+ * button explicitly, wherever it belongs in the theme/page-builder markup:
  *
- * Note: the footer button appears after the post body but BEFORE any
- * theme-rendered elements that live outside the_content() call (such as
- * .post-footnote). Without theme access this is the closest placement
- * available. If theme access is later restored, the original do_action
- * approach can be reinstated by swapping the hook in __construct().
+ *   [ad_embed_button]                  defaults to location="header"
+ *   [ad_embed_button location="footer"]
  *
- * The filter is guarded by is_main_query() + in_the_loop() to avoid
- * injecting into widget areas, shortcodes, or REST/feed calls that also
- * invoke the_content() behind the scenes.
+ * The "location" attribute is only a CSS/behavior modifier (it flips
+ * which direction the popover opens — see button.css) — it does not
+ * control WHERE on the page the button appears; that's entirely up to
+ * where the developer places the shortcode.
+ *
+ * The same render() method can also be called directly from PHP, e.g.
+ * from a template:
+ *   <?php echo do_shortcode( '[ad_embed_button location="footer"]' ); ?>
+ * or:
+ *   <?php AD_Embed_Plugin::instance()->button->render( 'footer' ); ?>
  *
  * WHY CONTRIBUTORS DON'T NEED wp-admin
  * Everything happens on the frontend: the capability check runs against
@@ -31,9 +34,13 @@ defined( 'ABSPATH' ) || exit;
 
 class AD_Embed_Button {
 
+	/**
+	 * Shortcode tag developers use to place the button.
+	 */
+	const SHORTCODE_TAG = 'ad_embed_button';
+
 	public function __construct() {
-		// Inject buttons directly into post content — no theme hooks needed.
-		add_filter( 'the_content', array( $this, 'inject_buttons' ) );
+		add_shortcode( self::SHORTCODE_TAG, array( $this, 'shortcode' ) );
 
 		// Assets are registered through the normal enqueue pipeline so
 		// they get version query-strings and can be dequeued if needed.
@@ -41,39 +48,23 @@ class AD_Embed_Button {
 	}
 
 	/**
-	 * Prepend the header button and append the footer button to the post
-	 * content. Fires on every the_content() call, but the guards below
-	 * limit actual injection to one main-query singular-post view per page.
+	 * Shortcode handler for [ad_embed_button].
 	 *
-	 * @param string $content The post content HTML.
-	 * @return string Content with buttons wrapped around it, or unchanged.
+	 * @param array|string $atts Shortcode attributes. Supports:
+	 *                           'location' => 'header'|'footer' (default 'header').
+	 * @return string Button markup, or '' if should_show() is false.
 	 */
-	public function inject_buttons( $content ) {
-		// is_main_query(): skip widget areas, shortcodes, and REST/feed
-		// calls — those also run the_content() but we only want the
-		// primary post body in the single-post template.
-		// in_the_loop(): skip any the_content() call outside a WP loop
-		// (some page builders do this).
-		if ( ! is_main_query() || ! in_the_loop() ) {
-			return $content;
-		}
+	public function shortcode( $atts ) {
+		$atts = shortcode_atts(
+			array( 'location' => 'header' ),
+			$atts,
+			self::SHORTCODE_TAG
+		);
 
-		// Capture the header button (render() outputs nothing if
-		// should_show() returns false, so ob_get_clean() is safe).
+		// Shortcodes must return their output, not echo it.
 		ob_start();
-		$this->render( 'header' );
-		$header_btn = ob_get_clean();
-
-		ob_start();
-		$this->render( 'footer' );
-		$footer_btn = ob_get_clean();
-
-		// Nothing to add (e.g. logged-out visitor) — return untouched.
-		if ( '' === $header_btn && '' === $footer_btn ) {
-			return $content;
-		}
-
-		return $header_btn . $content . $footer_btn;
+		$this->render( $atts['location'] );
+		return ob_get_clean();
 	}
 
 	/**
@@ -129,9 +120,10 @@ class AD_Embed_Button {
 	}
 
 	/**
-	 * Enqueue the button's CSS/JS — but only when the button will really
-	 * render. For everyone else (i.e. virtually all traffic) the plugin
-	 * adds zero bytes to the page.
+	 * Enqueue the button's CSS/JS for any qualifying single-post view
+	 * (per should_show()), regardless of whether [ad_embed_button] is
+	 * actually placed on the page. Assets are still zero-cost for
+	 * virtually all traffic since should_show() requires Contributor+.
 	 */
 	public function enqueue() {
 		if ( ! $this->should_show() ) {
@@ -156,11 +148,11 @@ class AD_Embed_Button {
 	/**
 	 * Output the button + hidden copy popover.
 	 *
-	 * Called by inject_buttons() via output buffering. Can also be called
-	 * directly from a theme template via:
-	 *   <?php do_action( 'ad_embed_button', 'header' ); ?>
-	 * if theme access is later restored — this method is the single
-	 * implementation regardless of how it is invoked.
+	 * Called by the [ad_embed_button] shortcode via output buffering (see
+	 * shortcode()). Can also be called directly, e.g. from a template:
+	 *   <?php AD_Embed_Plugin::instance()->button->render( 'footer' ); ?>
+	 * — this method is the single implementation regardless of how it is
+	 * invoked.
 	 *
 	 * @param string $location 'header' or 'footer'. Only used as a CSS
 	 *                         modifier class — e.g. the footer popover
