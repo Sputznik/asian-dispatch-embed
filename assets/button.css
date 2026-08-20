@@ -7,17 +7,24 @@
  *
  * Everything is scoped under .ad-embed-copy to avoid collisions with
  * theme styles. Class map (BEM-ish):
- *   .ad-embed-copy            wrapper; also the position:relative anchor
- *                             that the absolutely-positioned popover
- *                             hangs off
- *   .ad-embed-copy--header /  placement modifiers printed by the theme's
- *   .ad-embed-copy--footer    do_action('ad_embed_button', <location>);
- *                             they only differ in popover direction
- *   .ad-embed-copy__toggle    the pill-shaped "Embed this post" button
- *   .ad-embed-copy__popover   the panel (display toggled via [hidden])
- *   .ad-embed-copy__hint      short usage explanation
- *   .ad-embed-copy__code      readonly textarea with the snippet
- *   .ad-embed-copy__btn       the Copy action
+ *   .ad-embed-copy               wrapper; also the position:relative anchor
+ *                                that the absolutely-positioned popover
+ *                                hangs off
+ *   .ad-embed-copy--header /     placement modifiers set by the
+ *   .ad-embed-copy--footer       [ad_embed_button location="..."] shortcode
+ *                                attribute; they only differ in popover
+ *                                direction, not where the button sits on
+ *                                the page — that's up to shortcode placement
+ *   .ad-embed-copy__toggle       the pill-shaped "Embed this post" button
+ *   .ad-embed-copy__toggle--icon icon="yes" modifier: shrinks the toggle to
+ *                                a circular icon-only button (label hidden
+ *                                visually, kept for screen readers)
+ *   .ad-embed-copy__toggle-label the button's text label (custom via the
+ *                                shortcode's text="..." attribute)
+ *   .ad-embed-copy__popover      the panel (display toggled via [hidden])
+ *   .ad-embed-copy__hint         short usage explanation
+ *   .ad-embed-copy__code         readonly textarea with the snippet
+ *   .ad-embed-copy__btn          the Copy action
  */
 
 .ad-embed-copy {
@@ -51,6 +58,44 @@
 	font-size: 0.75em;
 	font-weight: 700;
 	letter-spacing: -0.05em;
+}
+
+/* icon="yes" modifier: a circular icon-only button showing a Font
+   Awesome glyph (theme already loads FA4 site-wide — see
+   ASSET-ASSESSMENT.md — so the plugin doesn't enqueue it). The label
+   stays in the DOM (as the accessible name via aria-label + for screen
+   readers) but is visually hidden — same off-screen technique
+   WordPress core uses for .screen-reader-text, so it doesn't affect
+   layout or the icon's centering. The CSS-drawn "</>" ::before glyph
+   used by the text variant is suppressed here since the <i class="fa
+   fa-code"> markup replaces it. */
+.ad-embed-copy__toggle--icon {
+	gap: 0;
+	width: 2.25em;
+	height: 2.25em;
+	padding: 0;
+	justify-content: center;
+	border-radius: 50%;
+}
+
+.ad-embed-copy__toggle--icon::before {
+	content: none;
+}
+
+.ad-embed-copy__toggle--icon .fa {
+	font-size: 0.95em;
+}
+
+.ad-embed-copy__toggle--icon .ad-embed-copy__toggle-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .ad-embed-copy__toggle:hover,
