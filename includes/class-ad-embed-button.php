@@ -215,10 +215,25 @@ class AD_Embed_Button {
 		$post_id = get_queried_object_id();
 		$snippet = $this->snippet( $post_id );
 
-		$toggle_class = 'ad-embed-copy__toggle' . ( $icon ? ' ad-embed-copy__toggle--icon' : '' );
+		// 'ad-embed-button' is a stable, unscoped class kept on the <button>
+		// itself (in addition to the BEM classes below) purely as a fixed
+		// hook for theme CSS/JS to target — it never changes shape, unlike
+		// the BEM classes which are an internal implementation contract
+		// with button.js/button.css.
+		$toggle_class = implode(
+			' ',
+			array_filter(
+				array(
+					'ad-embed-button',
+					'ad-embed-copy__toggle',
+					$icon ? 'ad-embed-copy__toggle--icon' : '',
+				)
+			)
+		);
 
 		// Markup contract with assets/button.js + button.css:
 		//   .ad-embed-copy               wrapper (position:relative anchor)
+		//   .ad-embed-button             stable external hook on the <button> (see above)
 		//   .ad-embed-copy__toggle       opens/closes the popover
 		//   .ad-embed-copy__toggle--icon icon-only modifier (visually hides the label,
 		//                                switches the glyph to a Font Awesome <i>)

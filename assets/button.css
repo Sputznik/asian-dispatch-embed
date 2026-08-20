@@ -10,6 +10,10 @@
  *   .ad-embed-copy               wrapper; also the position:relative anchor
  *                                that the absolutely-positioned popover
  *                                hangs off
+ *   .ad-embed-button             stable external hook on the <button> itself,
+ *                                unrelated to the BEM classes below — intended
+ *                                for theme CSS/JS to target without depending
+ *                                on this plugin's internal markup contract
  *   .ad-embed-copy--header /     placement modifiers set by the
  *   .ad-embed-copy--footer       [ad_embed_button location="..."] shortcode
  *                                attribute; they only differ in popover
