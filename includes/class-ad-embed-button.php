@@ -215,12 +215,21 @@ class AD_Embed_Button {
 		$post_id = get_queried_object_id();
 		$snippet = $this->snippet( $post_id );
 
-		// 'ad-embed-button' is a stable, unscoped class kept on the <button>
-		// itself (in addition to the BEM classes below) purely as a fixed
-		// hook for theme CSS/JS to target — it never changes shape, unlike
-		// the BEM classes which are an internal implementation contract
-		// with button.js/button.css.
-		$toggle_class = implode(
+		// 'ad-embed-wrapper' / 'ad-embed-button' are stable, unscoped classes
+		// kept on the wrapper <div> and the <button> respectively (in
+		// addition to the BEM classes below) purely as fixed hooks for
+		// theme CSS/JS to target — they never change shape, unlike the BEM
+		// classes which are an internal implementation contract with
+		// button.js/button.css.
+		$wrapper_class = implode(
+			' ',
+			array(
+				'ad-embed-wrapper',
+				'ad-embed-copy',
+				'ad-embed-copy--' . $location,
+			)
+		);
+		$toggle_class  = implode(
 			' ',
 			array_filter(
 				array(
@@ -232,6 +241,7 @@ class AD_Embed_Button {
 		);
 
 		// Markup contract with assets/button.js + button.css:
+		//   .ad-embed-wrapper            stable external hook on the wrapper <div> (see above)
 		//   .ad-embed-copy               wrapper (position:relative anchor)
 		//   .ad-embed-button             stable external hook on the <button> (see above)
 		//   .ad-embed-copy__toggle       opens/closes the popover
@@ -248,7 +258,7 @@ class AD_Embed_Button {
 		// ASSET-ASSESSMENT.md). The non-icon variant keeps the CSS-drawn
 		// "</>" glyph (button.css ::before) so it needs no icon font.
 		?>
-		<div class="ad-embed-copy ad-embed-copy--<?php echo esc_attr( $location ); ?>">
+		<div class="<?php echo esc_attr( $wrapper_class ); ?>">
 			<button
 				type="button"
 				class="<?php echo esc_attr( $toggle_class ); ?>"
